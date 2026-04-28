@@ -23,10 +23,10 @@ export const ScaleCard: React.FC<ScaleCardProps> = ({ scale, members, onEdit, on
       
       {/* Invisible element for PDF generation */}
       <div className="absolute w-0 h-0 overflow-hidden opacity-0 pointer-events-none">
-        <div id={`scale-report-${scale.id}`} className="w-[800px] bg-parchment-200 p-12 text-forest-900 font-sans">
-        <div className="border-b-2 border-forest-900 pb-6 mb-8 text-center">
+        <div id={`scale-report-${scale.id}`} className="w-[800px] p-12 font-sans" style={{ backgroundColor: '#F9F7F2', color: '#0F1F1C' }}>
+        <div className="border-b-2 pb-6 mb-8 text-center" style={{ borderColor: '#0F1F1C' }}>
           <h1 className="text-4xl font-serif mb-2">Escala de Louvor</h1>
-          <p className="text-xl uppercase tracking-widest text-forest-700">
+          <p className="text-xl uppercase tracking-widest" style={{ color: '#1A332E' }}>
             {format(dateObj, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
           </p>
           <p className="text-lg mt-2 font-serif italic">Tema: {scale.theme}</p>
@@ -34,26 +34,26 @@ export const ScaleCard: React.FC<ScaleCardProps> = ({ scale, members, onEdit, on
         
         <div className="grid grid-cols-2 gap-12">
           <div>
-            <h2 className="text-2xl font-serif border-b border-forest-900/20 pb-2 mb-4">Ministério</h2>
+            <h2 className="text-2xl font-serif border-b pb-2 mb-4" style={{ borderColor: 'rgba(15, 31, 28, 0.2)' }}>Ministério</h2>
             <ul className="space-y-3">
               {scale.memberIds.map(mId => {
                 const m = members.find(x => x.id === mId);
                 return m ? (
-                  <li key={mId} className="flex justify-between border-b border-dashed border-forest-900/20 pb-1">
+                  <li key={mId} className="flex justify-between border-b border-dashed pb-1" style={{ borderColor: 'rgba(15, 31, 28, 0.2)' }}>
                     <span className="font-bold">{m.name}</span>
-                    <span className="text-forest-600 text-sm uppercase">{m.role}</span>
+                    <span className="text-sm uppercase" style={{ color: '#254740' }}>{m.role}</span>
                   </li>
                 ) : null;
               })}
             </ul>
           </div>
           <div>
-            <h2 className="text-2xl font-serif border-b border-forest-900/20 pb-2 mb-4">Repertório</h2>
+            <h2 className="text-2xl font-serif border-b pb-2 mb-4" style={{ borderColor: 'rgba(15, 31, 28, 0.2)' }}>Repertório</h2>
             <ul className="space-y-4">
               {scale.songs.map((s, idx) => (
                 <li key={idx}>
                   <div className="font-bold text-lg">{idx + 1}. {s.title}</div>
-                  <div className="text-forest-600 text-sm">{s.artist}</div>
+                  <div className="text-sm" style={{ color: '#254740' }}>{s.artist}</div>
                 </li>
               ))}
             </ul>
