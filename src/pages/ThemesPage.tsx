@@ -64,13 +64,13 @@ export function ThemesPage() {
             {isEditing ? 'Renomear Tema' : 'Novo Tema'}
           </h3>
           
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form key={isEditing?.id ?? 'new'} onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-1">
               <label className="text-xs uppercase tracking-widest text-forest-500 font-semibold">Nome do Tema</label>
               <input 
                 name="name"
                 required
-                defaultValue={isEditing?.name || ''}
+                defaultValue={isEditing?.name ?? ''}
                 type="text" 
                 className="w-full bg-transparent border-b border-forest-700/30 py-2 focus:border-forest-900 outline-none transition-colors rounded-none placeholder-forest-900/30 text-forest-900" 
                 placeholder="Ex: Culto de Missões"

@@ -66,7 +66,7 @@ export function SongsPage() {
             {isEditing ? 'Editar Canção' : 'Nova Canção'}
           </h3>
           
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form key={isEditing?.id ?? 'new'} onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-1">
               <label className="text-xs uppercase tracking-widest text-forest-500 font-semibold">Título</label>
               <input 
