@@ -82,15 +82,15 @@ export const ScaleWizard: React.FC<ScaleWizardProps> = ({ initialData, onClose, 
   );
 
   return (
-    <div className="fixed inset-0 bg-forest-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-forest-900/80 backdrop-blur-sm z-50 flex items-end md:items-center justify-center md:p-4">
       <motion.div 
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="bg-parchment-200 w-full max-w-5xl max-h-[90vh] flex flex-col shadow-2xl border border-forest-900/20"
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 50 }}
+        className="bg-parchment-200 w-full md:max-w-5xl h-[92dvh] md:max-h-[90vh] flex flex-col shadow-2xl border border-forest-900/20 md:rounded-none rounded-t-2xl"
       >
-        <div className="flex justify-between items-center p-6 border-b border-forest-900/10 bg-white">
-          <h2 className="text-2xl font-serif text-forest-900">
+        <div className="flex justify-between items-center p-4 md:p-6 border-b border-forest-900/10 bg-white">
+          <h2 className="text-xl md:text-2xl font-serif text-forest-900">
             {initialData ? 'Editar Escala' : 'Nova Escala'}
           </h2>
           <button onClick={onClose} className="p-2 text-forest-500 hover:text-forest-900 transition-colors">
@@ -98,8 +98,8 @@ export const ScaleWizard: React.FC<ScaleWizardProps> = ({ initialData, onClose, 
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12">
             
             {/* Left Column: Info & Repertory */}
             <div className="space-y-10">

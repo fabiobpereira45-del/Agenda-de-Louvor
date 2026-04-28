@@ -97,15 +97,15 @@ export function ScalesPage() {
 
   return (
     <div className="space-y-12">
-      <header className="border-b border-forest-900/10 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <header className="border-b border-forest-900/10 pb-4 md:pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-4xl md:text-5xl font-serif text-forest-900 mb-2">Escalas</h1>
-          <p className="text-forest-700 tracking-wide text-sm uppercase font-semibold">Organização do Ministério</p>
+          <h1 className="text-3xl md:text-5xl font-serif text-forest-900 mb-1">Escalas</h1>
+          <p className="text-forest-700 tracking-wide text-xs uppercase font-semibold">Organização do Ministério</p>
         </div>
         
         <button 
           onClick={() => setIsCreating(true)}
-          className="bg-amber-500 text-forest-900 px-8 py-3 font-bold uppercase tracking-widest text-sm hover:bg-amber-400 transition-colors flex items-center justify-center gap-2 shadow-[4px_4px_0px_0px_rgba(15,31,28,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,31,28,1)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none"
+          className="bg-amber-500 text-forest-900 px-5 py-3 font-bold uppercase tracking-widest text-xs hover:bg-amber-400 transition-colors flex items-center justify-center gap-2 shadow-[4px_4px_0px_0px_rgba(15,31,28,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,31,28,1)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none"
         >
           <Plus className="w-5 h-5" />
           Nova Escala
@@ -151,7 +151,7 @@ export function ScalesPage() {
       </div>
 
       {/* Scales Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-8">
         {isLoading ? (
           <div className="col-span-full py-24 flex flex-col items-center justify-center text-forest-900/40">
              <Loader2 className="w-12 h-12 animate-spin mb-4" />

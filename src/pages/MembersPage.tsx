@@ -48,18 +48,18 @@ export function MembersPage() {
 
   return (
     <div className="space-y-12">
-      <header className="border-b border-forest-900/10 pb-6 flex items-end justify-between">
+      <header className="border-b border-forest-900/10 pb-4 md:pb-6 flex items-end justify-between">
         <div>
-          <h1 className="text-4xl md:text-5xl font-serif text-forest-900 mb-2">Membros</h1>
-          <p className="text-forest-700 tracking-wide text-sm uppercase font-semibold">Corpo de Adoradores</p>
+          <h1 className="text-3xl md:text-5xl font-serif text-forest-900 mb-1">Membros</h1>
+          <p className="text-forest-700 tracking-wide text-xs md:text-sm uppercase font-semibold">Corpo de Adoradores</p>
         </div>
-        <div className="bg-amber-500/10 text-amber-600 px-4 py-2 text-sm font-bold tracking-wider">
+        <div className="bg-forest-900 text-parchment-200 px-3 py-1.5 md:px-4 md:py-2 text-xs font-bold tracking-wider">
           {members.length} CADASTRADOS
         </div>
       </header>
 
       {/* Extreme Asymmetry: 30/70 Split (Form vs List) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-12 items-start">
         
         {/* Form Column - Sticky & Sharp */}
         <div className="lg:col-span-4 lg:sticky lg:top-12 bg-forest-900 text-parchment-200 p-8 shadow-2xl">
