@@ -88,16 +88,18 @@ export const api = {
     
     if (scalesError) throw scalesError;
 
+    if (!scalesData) return [];
+
     return (scalesData as any[]).map(s => ({
       id: s.id,
       date: s.date,
       theme: s.theme,
       notes: s.notes,
-      songs: s.scale_songs.map((ss: any) => ({
+      songs: (s.scale_songs || []).map((ss: any) => ({
         ...ss.songs,
-        themeId: ss.songs.theme_id
-      })),
-      memberIds: s.scale_members.map((sm: any) => sm.member_id)
+        themeId: ss.songs?.theme_id
+      })).filter((s: any) => s.id), // Remove nulos caso a música tenha sido deletada
+      memberIds: (s.scale_members || []).map((sm: any) => sm.member_id)
     })) as Scale[];
   },
 

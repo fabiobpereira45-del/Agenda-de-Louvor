@@ -53,10 +53,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
           api.getScales()
         ]);
         
-        if (dbMembers) setMembers(dbMembers);
+        if (dbMembers) setMembers(dbMembers || []);
         if (dbThemes && dbThemes.length > 0) setThemes(dbThemes);
-        if (dbSongs) setMasterSongs(dbSongs);
-        if (dbScales) setScales(dbScales);
+        if (dbSongs) setMasterSongs(dbSongs || []);
+        if (dbScales) setScales(dbScales || []);
 
       } catch (error) {
         console.error('Erro ao sincronizar com Supabase:', error);
