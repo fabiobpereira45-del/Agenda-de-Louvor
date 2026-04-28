@@ -46,30 +46,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const loadInitialData = async () => {
       setIsLoading(true);
       try {
-        const [dbMembers, dbThemes, dbSongs] = await Promise.all([
+        const [dbMembers, dbThemes, dbSongs, dbScales] = await Promise.all([
           api.getMembers(),
           api.getThemes(),
-          api.getSongs()
+          api.getSongs(),
+          api.getScales()
         ]);
         
-        if (dbMembers && dbMembers.length > 0) setMembers(dbMembers);
+        if (dbMembers) setMembers(dbMembers);
         if (dbThemes && dbThemes.length > 0) setThemes(dbThemes);
-        if (dbSongs && dbSongs.length > 0) setMasterSongs(dbSongs);
-        
-        // As escalas ainda estamos trabalhando no salvamento, 
-        // por enquanto mantemos o local ou vazio
-        const savedScales = localStorage.getItem('louvor_scales');
-        if (savedScales) setScales(JSON.parse(savedScales));
+        if (dbSongs) setMasterSongs(dbSongs);
+        if (dbScales) setScales(dbScales);
 
       } catch (error) {
         console.error('Erro ao sincronizar com Supabase:', error);
-        // Fallback para localStorage em caso de erro
-        const m = localStorage.getItem('louvor_members');
-        const t = localStorage.getItem('louvor_themes');
-        const s = localStorage.getItem('louvor_master_songs');
-        if (m) setMembers(JSON.parse(m));
-        if (t) setThemes(JSON.parse(t));
-        if (s) setMasterSongs(JSON.parse(s));
       } finally {
         setIsLoading(false);
       }
@@ -77,16 +67,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     loadInitialData();
   }, []);
-
-  // Sincronização local (Backup)
-  useEffect(() => {
-    if (!isLoading) {
-      localStorage.setItem('louvor_members', JSON.stringify(members));
-      localStorage.setItem('louvor_scales', JSON.stringify(scales));
-      localStorage.setItem('louvor_themes', JSON.stringify(themes));
-      localStorage.setItem('louvor_master_songs', JSON.stringify(masterSongs));
-    }
-  }, [members, scales, themes, masterSongs, isLoading]);
 
   return (
     <AppContext.Provider value={{

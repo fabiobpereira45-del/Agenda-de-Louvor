@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Member, Theme, Scale, Song } from '../../types';
-import { X, Search, Plus, Trash2, CheckCircle2 } from 'lucide-react';
+import { X, Search, Plus, Trash2, CheckCircle2, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useAppStore } from '../../context/AppContext';
+import { api } from '../../lib/api';
 
 interface ScaleWizardProps {
   initialData?: Scale;
@@ -17,22 +18,39 @@ export const ScaleWizard: React.FC<ScaleWizardProps> = ({ initialData, onClose, 
   const [theme, setTheme] = useState(initialData?.theme || '');
   const [selectedMembers, setSelectedMembers] = useState<string[]>(initialData?.memberIds || []);
   const [songs, setSongs] = useState<Song[]>(initialData?.songs || []);
+  const [isSaving, setIsSaving] = useState(false);
   
   const [songInput, setSongInput] = useState({ title: '', artist: '' });
   const [songSearchQuery, setSongSearchQuery] = useState('');
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!date || !theme) {
       alert("Por favor, preencha a data e o tema.");
       return;
     }
-    onSave({
-      id: initialData?.id || '',
-      date,
-      theme,
-      memberIds: selectedMembers,
-      songs
-    });
+
+    setIsSaving(true);
+    try {
+      const scaleData = {
+        date,
+        theme,
+        memberIds: selectedMembers,
+        songs
+      };
+
+      if (initialData) {
+        await api.updateScale(initialData.id, scaleData);
+        onSave({ ...scaleData, id: initialData.id });
+      } else {
+        const nouveau = await api.addScale(scaleData);
+        onSave(nouveau);
+      }
+    } catch (error) {
+      console.error('Erro ao salvar escala:', error);
+      alert('Falha ao salvar escala no banco de dados.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const toggleMember = (id: string) => {
@@ -242,7 +260,12 @@ export const ScaleWizard: React.FC<ScaleWizardProps> = ({ initialData, onClose, 
           <button onClick={onClose} className="px-6 py-3 border border-forest-900/20 text-forest-700 font-bold text-sm uppercase tracking-wider hover:bg-forest-50">
             Cancelar
           </button>
-          <button onClick={handleSave} className="px-8 py-3 bg-amber-500 text-forest-900 font-bold text-sm uppercase tracking-wider hover:bg-amber-400 transition-colors">
+          <button 
+            onClick={handleSave} 
+            disabled={isSaving}
+            className="px-8 py-3 bg-amber-500 text-forest-900 font-bold text-sm uppercase tracking-wider hover:bg-amber-400 transition-colors disabled:opacity-50 flex items-center gap-2"
+          >
+            {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
             {initialData ? 'Atualizar Escala' : 'Criar Escala'}
           </button>
         </div>

@@ -2,15 +2,16 @@ import React, { useState, useMemo } from 'react';
 import { useAppStore } from '../context/AppContext';
 import { ScaleCard } from '../components/scales/ScaleCard';
 import { ScaleWizard } from '../components/scales/ScaleWizard';
-import { Plus, Search, Calendar as CalendarIcon, Download } from 'lucide-react';
+import { Plus, Search, Calendar as CalendarIcon, Download, Loader2 } from 'lucide-react';
 import { Scale } from '../types';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { parseISO, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { api } from '../lib/api';
 
 export function ScalesPage() {
-  const { scales, setScales, members } = useAppStore();
+  const { scales, setScales, members, isLoading } = useAppStore();
   
   const [isCreating, setIsCreating] = useState(false);
   const [editingScale, setEditingScale] = useState<Scale | null>(null);
@@ -143,17 +144,31 @@ export function ScalesPage() {
 
       {/* Scales Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-        {filteredScales.map(scale => (
+        {isLoading ? (
+          <div className="col-span-full py-24 flex flex-col items-center justify-center text-forest-900/40">
+             <Loader2 className="w-12 h-12 animate-spin mb-4" />
+             <p className="font-serif text-xl">Consultando os céus...</p>
+          </div>
+        ) : filteredScales.map(scale => (
           <ScaleCard 
             key={scale.id} 
             scale={scale} 
             members={members}
             onEdit={() => setEditingScale(scale)}
-            onDelete={(id) => setScales(scales.filter(s => s.id !== id))}
+            onDelete={async (id) => {
+              if (!confirm('Deseja excluir esta escala?')) return;
+              try {
+                await api.deleteScale(id);
+                setScales(scales.filter(s => s.id !== id));
+              } catch (error) {
+                console.error('Erro ao excluir escala:', error);
+                alert('Erro ao excluir do banco de dados.');
+              }
+            }}
             onDownload={() => downloadPDF(scale.id)}
           />
         ))}
-        {filteredScales.length === 0 && (
+        {!isLoading && filteredScales.length === 0 && (
           <div className="col-span-full py-24 bg-white border border-dashed border-forest-900/20 flex flex-col items-center justify-center text-forest-900/40">
             <CalendarIcon className="w-16 h-16 mb-4 stroke-1" />
             <p className="font-serif text-xl">Nenhuma escala programada.</p>
