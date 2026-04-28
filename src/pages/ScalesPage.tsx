@@ -20,7 +20,8 @@ export function ScalesPage() {
   const [viewingScale, setViewingScale] = useState<Scale | null>(null);
   
   const [filterQuery, setFilterQuery] = useState('');
-  const [filterMonth, setFilterMonth] = useState('');
+  // Inicia com o mês atual no formato yyyy-MM (ex: "2026-04")
+  const [filterMonth, setFilterMonth] = useState(() => format(new Date(), 'yyyy-MM'));
   const [isExporting, setIsExporting] = useState(false);
 
   const filteredScales = useMemo(() => {
