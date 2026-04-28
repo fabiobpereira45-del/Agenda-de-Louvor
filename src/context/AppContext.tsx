@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Member, Scale, Theme, Song } from '../types';
+import { api } from '../lib/api';
 
 interface AppContextType {
   members: Member[];
@@ -10,6 +11,7 @@ interface AppContextType {
   setThemes: React.Dispatch<React.SetStateAction<Theme[]>>;
   masterSongs: Song[];
   setMasterSongs: React.Dispatch<React.SetStateAction<Song[]>>;
+  isLoading: boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -33,48 +35,66 @@ const DEFAULT_THEMES: Theme[] = [
 ];
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [members, setMembers] = useState<Member[]>(() => {
-    const saved = localStorage.getItem('louvor_members');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [scales, setScales] = useState<Scale[]>([]);
+  const [themes, setThemes] = useState<Theme[]>(DEFAULT_THEMES);
+  const [masterSongs, setMasterSongs] = useState<Song[]>([]);
 
-  const [scales, setScales] = useState<Scale[]>(() => {
-    const saved = localStorage.getItem('louvor_scales');
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const [themes, setThemes] = useState<Theme[]>(() => {
-    const saved = localStorage.getItem('louvor_themes');
-    return saved ? JSON.parse(saved) : DEFAULT_THEMES;
-  });
-
-  const [masterSongs, setMasterSongs] = useState<Song[]>(() => {
-    const saved = localStorage.getItem('louvor_master_songs');
-    return saved ? JSON.parse(saved) : [];
-  });
-
+  // Carregamento inicial do Supabase
   useEffect(() => {
-    localStorage.setItem('louvor_members', JSON.stringify(members));
-  }, [members]);
+    const loadInitialData = async () => {
+      setIsLoading(true);
+      try {
+        const [dbMembers, dbThemes, dbSongs] = await Promise.all([
+          api.getMembers(),
+          api.getThemes(),
+          api.getSongs()
+        ]);
+        
+        if (dbMembers && dbMembers.length > 0) setMembers(dbMembers);
+        if (dbThemes && dbThemes.length > 0) setThemes(dbThemes);
+        if (dbSongs && dbSongs.length > 0) setMasterSongs(dbSongs);
+        
+        // As escalas ainda estamos trabalhando no salvamento, 
+        // por enquanto mantemos o local ou vazio
+        const savedScales = localStorage.getItem('louvor_scales');
+        if (savedScales) setScales(JSON.parse(savedScales));
 
-  useEffect(() => {
-    localStorage.setItem('louvor_scales', JSON.stringify(scales));
-  }, [scales]);
+      } catch (error) {
+        console.error('Erro ao sincronizar com Supabase:', error);
+        // Fallback para localStorage em caso de erro
+        const m = localStorage.getItem('louvor_members');
+        const t = localStorage.getItem('louvor_themes');
+        const s = localStorage.getItem('louvor_master_songs');
+        if (m) setMembers(JSON.parse(m));
+        if (t) setThemes(JSON.parse(t));
+        if (s) setMasterSongs(JSON.parse(s));
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  useEffect(() => {
-    localStorage.setItem('louvor_themes', JSON.stringify(themes));
-  }, [themes]);
+    loadInitialData();
+  }, []);
 
+  // Sincronização local (Backup)
   useEffect(() => {
-    localStorage.setItem('louvor_master_songs', JSON.stringify(masterSongs));
-  }, [masterSongs]);
+    if (!isLoading) {
+      localStorage.setItem('louvor_members', JSON.stringify(members));
+      localStorage.setItem('louvor_scales', JSON.stringify(scales));
+      localStorage.setItem('louvor_themes', JSON.stringify(themes));
+      localStorage.setItem('louvor_master_songs', JSON.stringify(masterSongs));
+    }
+  }, [members, scales, themes, masterSongs, isLoading]);
 
   return (
     <AppContext.Provider value={{
       members, setMembers,
       scales, setScales,
       themes, setThemes,
-      masterSongs, setMasterSongs
+      masterSongs, setMasterSongs,
+      isLoading
     }}>
       {children}
     </AppContext.Provider>
