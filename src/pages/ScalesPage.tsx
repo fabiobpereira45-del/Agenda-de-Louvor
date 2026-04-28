@@ -21,15 +21,23 @@ export function ScalesPage() {
   const [isExporting, setIsExporting] = useState(false);
 
   const filteredScales = useMemo(() => {
+    if (!Array.isArray(scales)) return [];
+    
     return scales.filter(scale => {
-      const date = parseISO(scale.date);
-      const monthMatch = filterMonth ? format(date, 'yyyy-MM') === filterMonth : true;
-      const queryMatch = filterQuery ? (
-        scale.theme.toLowerCase().includes(filterQuery.toLowerCase()) ||
-        scale.songs.some(s => s.title.toLowerCase().includes(filterQuery.toLowerCase()))
-      ) : true;
-      return monthMatch && queryMatch;
-    }).sort((a, b) => a.date.localeCompare(b.date));
+      try {
+        if (!scale.date) return false;
+        const date = parseISO(scale.date);
+        const monthMatch = filterMonth ? format(date, 'yyyy-MM') === filterMonth : true;
+        const queryMatch = filterQuery ? (
+          (scale.theme || '').toLowerCase().includes(filterQuery.toLowerCase()) ||
+          (scale.songs || []).some(s => s.title.toLowerCase().includes(filterQuery.toLowerCase()))
+        ) : true;
+        return monthMatch && queryMatch;
+      } catch (e) {
+        console.error("Erro ao processar data da escala:", e);
+        return false;
+      }
+    }).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
   }, [scales, filterMonth, filterQuery]);
 
   const downloadPDF = async (scaleId: string) => {

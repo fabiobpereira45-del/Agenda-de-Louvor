@@ -13,7 +13,21 @@ interface ScaleCardProps {
 }
 
 export const ScaleCard: React.FC<ScaleCardProps> = ({ scale, members, onEdit, onDelete, onDownload }) => {
-  const dateObj = parseISO(scale.date);
+  const dateObj = React.useMemo(() => {
+    try {
+      return scale.date ? parseISO(scale.date) : new Date();
+    } catch (e) {
+      return new Date();
+    }
+  }, [scale.date]);
+
+  const safeFormat = (date: Date, pattern: string) => {
+    try {
+      return format(date, pattern, { locale: ptBR });
+    } catch (e) {
+      return "Data inválida";
+    }
+  };
   
   return (
     <div className="group relative bg-white border border-forest-900/10 hover:border-forest-900 transition-colors duration-300">
@@ -27,7 +41,7 @@ export const ScaleCard: React.FC<ScaleCardProps> = ({ scale, members, onEdit, on
         <div className="border-b-2 pb-6 mb-8 text-center" style={{ borderColor: '#0F1F1C' }}>
           <h1 className="text-4xl font-serif mb-2">Escala de Louvor</h1>
           <p className="text-xl uppercase tracking-widest" style={{ color: '#1A332E' }}>
-            {format(dateObj, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+            {safeFormat(dateObj, "dd 'de' MMMM 'de' yyyy")}
           </p>
           <p className="text-lg mt-2 font-serif italic">Tema: {scale.theme}</p>
         </div>
@@ -67,7 +81,7 @@ export const ScaleCard: React.FC<ScaleCardProps> = ({ scale, members, onEdit, on
           <div>
             <div className="text-xs font-bold tracking-widest uppercase text-amber-600 mb-2 flex items-center gap-2">
               <Calendar className="w-4 h-4" />
-              {format(dateObj, "dd 'de' MMM", { locale: ptBR })}
+              {safeFormat(dateObj, "dd 'de' MMM")}
             </div>
             <h3 className="text-2xl font-serif text-forest-900">{scale.theme}</h3>
           </div>
