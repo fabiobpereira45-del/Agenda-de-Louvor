@@ -156,8 +156,9 @@ export const ScaleWizard: React.FC<ScaleWizardProps> = ({ initialData, onClose, 
                             <span><strong className="font-serif">{s.title}</strong> - {s.artist}</span>
                             <button 
                               onClick={() => {
-                                if (!songs.some(existing => existing.title === s.title)) {
-                                  setSongs([...songs, { ...s, id: crypto.randomUUID() }]);
+                                // Usa o ID original da música (não cria UUID novo)
+                                if (!songs.some(existing => existing.id === s.id)) {
+                                  setSongs([...songs, s]);
                                 }
                               }}
                               className="text-amber-600 hover:text-amber-700 font-bold text-[10px] uppercase tracking-wider"

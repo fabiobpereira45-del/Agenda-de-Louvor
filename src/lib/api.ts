@@ -141,39 +141,46 @@ export const api = {
   },
 
   async updateScale(id: string, scale: Partial<Scale>) {
-    // 1. Atualizar dados básicos
-    const updatePayload: any = {};
-    if (scale.date) updatePayload.date = scale.date;
-    if (scale.theme) updatePayload.theme = scale.theme;
-    if (scale.notes !== undefined) updatePayload.notes = scale.notes;
+    // 1. Sempre atualizar os dados básicos (data e tema)
+    const { error: updateError } = await supabase
+      .from('scales')
+      .update({
+        date: scale.date,
+        theme: scale.theme,
+        notes: scale.notes ?? null
+      })
+      .eq('id', id);
 
-    if (Object.keys(updatePayload).length > 0) {
-      await supabase.from('scales').update(updatePayload).eq('id', id);
-    }
+    if (updateError) throw updateError;
 
-    // 2. Sincronizar músicas (se fornecidas)
-    if (scale.songs) {
+    // 2. Sincronizar músicas — limpa e reinserere
+    if (scale.songs !== undefined) {
       await supabase.from('scale_songs').delete().eq('scale_id', id);
-      const songRelations = scale.songs.map((song, index) => ({
-        scale_id: id,
-        song_id: song.id,
-        order_index: index
-      }));
-      await supabase.from('scale_songs').insert(songRelations);
+      if (scale.songs.length > 0) {
+        const songRelations = scale.songs.map((song, index) => ({
+          scale_id: id,
+          song_id: song.id,
+          order_index: index
+        }));
+        const { error: songsError } = await supabase.from('scale_songs').insert(songRelations);
+        if (songsError) console.error('Erro ao salvar músicas da escala:', songsError);
+      }
     }
 
-    // 3. Sincronizar membros (se fornecidos)
-    if (scale.memberIds) {
+    // 3. Sincronizar membros — limpa e reinsere
+    if (scale.memberIds !== undefined) {
       await supabase.from('scale_members').delete().eq('scale_id', id);
-      const memberRelations = scale.memberIds.map(memberId => ({
-        scale_id: id,
-        member_id: memberId
-      }));
-      await supabase.from('scale_members').insert(memberRelations);
+      if (scale.memberIds.length > 0) {
+        const memberRelations = scale.memberIds.map(memberId => ({
+          scale_id: id,
+          member_id: memberId
+        }));
+        const { error: membersError } = await supabase.from('scale_members').insert(memberRelations);
+        if (membersError) console.error('Erro ao salvar membros da escala:', membersError);
+      }
     }
 
-    // Retornar a escala completa atualizada (simplificado para economia de código)
-    return scale as Scale;
+    return { ...scale, id } as Scale;
   },
 
   async deleteScale(id: string) {
