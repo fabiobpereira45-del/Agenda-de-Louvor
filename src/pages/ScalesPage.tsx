@@ -74,22 +74,56 @@ export function ScalesPage() {
     setIsExporting(true);
     try {
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      
+      const pdfWidth  = pdf.internal.pageSize.getWidth();   // 210mm
+      const pdfHeight = pdf.internal.pageSize.getHeight();  // 297mm
+      const slotHeight = pdfHeight / 2;   // cada escala ocupa metade da folha
+      const margin = 4;                   // margem interna em mm
+
       for (let i = 0; i < filteredScales.length; i++) {
         const scale = filteredScales[i];
         const element = document.getElementById(`scale-report-${scale.id}`);
         if (!element) continue;
-        
-        const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#F9F7F2' });
+
+        const canvas = await html2canvas(element, {
+          scale: 1.5,
+          useCORS: true,
+          backgroundColor: '#F9F7F2',
+        });
         const imgData = canvas.toDataURL('image/png');
-        const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-        
-        if (i > 0) pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
+
+        // Calcula dimensões para caber em metade da página com margem
+        const maxW = pdfWidth - margin * 2;
+        const maxH = slotHeight - margin * 2;
+        const ratio = Math.min(maxW / (canvas.width / 3.7795), maxH / (canvas.height / 3.7795));
+        const imgW = (canvas.width / 3.7795) * ratio;
+        const imgH = (canvas.height / 3.7795) * ratio;
+        const xOffset = (pdfWidth - imgW) / 2;
+
+        const isFirstOnPage = i % 2 === 0;
+
+        // Nova página a cada 2 escalas (exceto na primeira)
+        if (i > 0 && isFirstOnPage) {
+          pdf.addPage();
+        }
+
+        // Posição Y: topo da folha ou metade
+        const yOffset = isFirstOnPage
+          ? margin
+          : slotHeight + margin;
+
+        pdf.addImage(imgData, 'PNG', xOffset, yOffset, imgW, imgH);
+
+        // Linha divisória entre as duas escalas na mesma folha
+        if (!isFirstOnPage) {
+          pdf.setDrawColor(200, 190, 175);
+          pdf.setLineWidth(0.3);
+          pdf.line(margin, slotHeight, pdfWidth - margin, slotHeight);
+        }
       }
-      
-      const monthTitle = filterMonth ? format(parseISO(`${filterMonth}-01`), 'MMMM-yyyy', { locale: ptBR }) : 'Geral';
+
+      const monthTitle = filterMonth
+        ? format(parseISO(`${filterMonth}-01`), 'MMMM-yyyy', { locale: ptBR })
+        : 'Geral';
       pdf.save(`relatorio-mensal-${monthTitle}.pdf`);
     } catch (error) {
       console.error("Erro ao gerar relatório mensal:", error);
