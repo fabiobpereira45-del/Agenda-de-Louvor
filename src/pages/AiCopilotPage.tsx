@@ -13,6 +13,9 @@ const STYLE_OPTIONS = [
   { id: 'badaladas', label: 'Badaladas' },
   { id: 'contemplativo', label: 'Contemplativo' },
   { id: 'tendencias', label: 'Tendências' },
+  { id: 'internacionais', label: 'Internacionais' },
+  { id: 'nacionais', label: 'Nacionais' },
+  { id: 'worship', label: 'Worship' },
 ];
 
 // Opções de época (substituem "Retrô")
@@ -118,7 +121,7 @@ Liste as músicas em ordem de relevância para o culto.`;
                     <button
                       key={opt.id}
                       onClick={() => toggleStyle(opt.id)}
-                      className={`px-3 py-3 text-xs uppercase tracking-wider font-bold transition-all border ${
+                      className={`px-2 py-3 text-xs uppercase tracking-wider font-bold transition-all border ${
                         selectedStyles.includes(opt.id)
                           ? 'bg-forest-900 text-parchment-200 border-forest-900'
                           : 'bg-transparent text-forest-700 border-forest-900/20 hover:border-forest-900'
