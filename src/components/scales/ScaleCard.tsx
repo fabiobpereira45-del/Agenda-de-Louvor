@@ -22,7 +22,8 @@ export const ScaleCard: React.FC<ScaleCardProps> = ({ scale, members, onEdit, on
       <div className="h-1 bg-amber-500 w-full transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out" />
       
       {/* Invisible element for PDF generation */}
-      <div id={`scale-report-${scale.id}`} className="absolute -left-[9999px] top-0 w-[800px] bg-white p-12 text-forest-900 font-sans">
+      <div className="absolute w-0 h-0 overflow-hidden opacity-0 pointer-events-none">
+        <div id={`scale-report-${scale.id}`} className="w-[800px] bg-parchment-200 p-12 text-forest-900 font-sans">
         <div className="border-b-2 border-forest-900 pb-6 mb-8 text-center">
           <h1 className="text-4xl font-serif mb-2">Escala de Louvor</h1>
           <p className="text-xl uppercase tracking-widest text-forest-700">
@@ -58,6 +59,7 @@ export const ScaleCard: React.FC<ScaleCardProps> = ({ scale, members, onEdit, on
             </ul>
           </div>
         </div>
+      </div>
       </div>
 
       <div className="p-8">
