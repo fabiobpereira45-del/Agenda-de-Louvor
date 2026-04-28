@@ -1,0 +1,6 @@
+{
+  "name": "Agenda de Louvor",
+  "description": "Aplicativo para gestão de escala de louvor, seleção de músicas com IA e geração de relatórios PDF.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

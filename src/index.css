@@ -1,0 +1,46 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", serif;
+  
+  /* Divine Minimalist Palette */
+  --color-parchment-50: #ffffff;
+  --color-parchment-100: #FCFBF8;
+  --color-parchment-200: #F9F7F2; /* Main Background */
+  --color-parchment-300: #EAE5D9;
+  --color-parchment-400: #DCD3BF;
+  
+  --color-forest-500: #2C4A44;
+  --color-forest-700: #1A332E;
+  --color-forest-900: #0F1F1C; /* Main Text / Dark elements */
+  
+  --color-amber-400: #E2C29B;
+  --color-amber-500: #D4A373; /* Primary Accent */
+  --color-amber-600: #B88655;
+  --color-amber-700: #93673F;
+}
+
+@layer base {
+  body {
+    @apply bg-parchment-200 text-forest-900 font-sans antialiased;
+    /* Sharp geometry default: no rounded corners by default for elements */
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif tracking-tight text-forest-900;
+  }
+}
+
+@layer utilities {
+  .no-print {
+    @media print {
+      display: none !important;
+    }
+  }
+  
+  .glass-forest {
+    @apply bg-forest-900/90 backdrop-blur-md border border-forest-700/50;
+  }
+}
