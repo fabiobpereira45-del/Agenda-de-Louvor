@@ -92,13 +92,14 @@ export const api = {
 
     return (scalesData as any[]).map(s => ({
       id: s.id,
-      date: s.date,
+      // Extrai apenas YYYY-MM-DD para evitar problema de fuso horário (UTC vs UTC-3)
+      date: s.date ? s.date.split('T')[0] : s.date,
       theme: s.theme,
       notes: s.notes,
       songs: (s.scale_songs || []).map((ss: any) => ({
         ...ss.songs,
         themeId: ss.songs?.theme_id
-      })).filter((s: any) => s.id), // Remove nulos caso a música tenha sido deletada
+      })).filter((s: any) => s.id),
       memberIds: (s.scale_members || []).map((sm: any) => sm.member_id)
     })) as Scale[];
   },
