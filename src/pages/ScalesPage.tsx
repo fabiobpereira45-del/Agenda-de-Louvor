@@ -28,7 +28,7 @@ export function ScalesPage() {
         scale.songs.some(s => s.title.toLowerCase().includes(filterQuery.toLowerCase()))
       ) : true;
       return monthMatch && queryMatch;
-    }).sort((a, b) => b.date.localeCompare(a.date));
+    }).sort((a, b) => a.date.localeCompare(b.date));
   }, [scales, filterMonth, filterQuery]);
 
   const downloadPDF = async (scaleId: string) => {
