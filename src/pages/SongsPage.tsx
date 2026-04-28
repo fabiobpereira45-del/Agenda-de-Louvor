@@ -27,9 +27,9 @@ export function SongsPage() {
         setMasterSongs([...masterSongs, nouveau]);
       }
       (e.target as HTMLFormElement).reset();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao salvar música:', error);
-      alert('Falha ao salvar no banco de dados.');
+      alert(`Falha ao salvar: ${error.message}`);
     } finally {
       setIsSaving(false);
     }
@@ -40,9 +40,9 @@ export function SongsPage() {
     try {
       await api.deleteSong(id);
       setMasterSongs(masterSongs.filter(s => s.id !== id));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao excluir música:', error);
-      alert('Erro ao excluir do banco de dados.');
+      alert(`Erro ao excluir: ${error.message}`);
     }
   };
 

@@ -25,9 +25,9 @@ export function ThemesPage() {
         setThemes([...themes, nouveau]);
       }
       (e.target as HTMLFormElement).reset();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao salvar tema:', error);
-      alert('Falha ao salvar no banco de dados.');
+      alert(`Falha ao salvar: ${error.message}`);
     } finally {
       setIsSaving(false);
     }
@@ -38,9 +38,9 @@ export function ThemesPage() {
     try {
       await api.deleteTheme(id);
       setThemes(themes.filter(t => t.id !== id));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao excluir tema:', error);
-      alert('Erro ao excluir do banco de dados.');
+      alert(`Erro ao excluir: ${error.message}`);
     }
   };
 

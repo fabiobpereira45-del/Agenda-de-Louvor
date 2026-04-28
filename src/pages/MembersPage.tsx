@@ -26,9 +26,9 @@ export function MembersPage() {
         setMembers([...members, nouveau]);
       }
       (e.target as HTMLFormElement).reset();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao salvar membro:', error);
-      alert('Falha ao salvar no banco de dados. Verifique sua conexão.');
+      alert(`Falha ao salvar: ${error.message || 'Verifique sua conexão'}`);
     } finally {
       setIsSaving(false);
     }
@@ -40,9 +40,9 @@ export function MembersPage() {
     try {
       await api.deleteMember(id);
       setMembers(members.filter(m => m.id !== id));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao excluir membro:', error);
-      alert('Erro ao excluir do banco de dados.');
+      alert(`Erro ao excluir: ${error.message}`);
     }
   };
 
