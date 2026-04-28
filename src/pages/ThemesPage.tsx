@@ -1,24 +1,47 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../context/AppContext';
-import { BookOpen, Plus, Trash2, Edit2 } from 'lucide-react';
+import { BookOpen, Plus, Trash2, Edit2, Loader2 } from 'lucide-react';
 import { Theme } from '../types';
+import { api } from '../lib/api';
 
 export function ThemesPage() {
-  const { themes, setThemes } = useAppStore();
+  const { themes, setThemes, isLoading: isGlobalLoading } = useAppStore();
   const [isEditing, setIsEditing] = useState<Theme | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsSaving(true);
     const formData = new FormData(e.currentTarget);
     const name = formData.get('name') as string;
 
-    if (isEditing) {
-      setThemes(themes.map(t => t.id === isEditing.id ? { ...t, name } : t));
-      setIsEditing(null);
-    } else {
-      setThemes([...themes, { id: crypto.randomUUID(), name }]);
+    try {
+      if (isEditing) {
+        const updated = await api.updateTheme(isEditing.id, { name });
+        setThemes(themes.map(t => t.id === isEditing.id ? updated : t));
+        setIsEditing(null);
+      } else {
+        const nouveau = await api.addTheme({ name });
+        setThemes([...themes, nouveau]);
+      }
+      (e.target as HTMLFormElement).reset();
+    } catch (error) {
+      console.error('Erro ao salvar tema:', error);
+      alert('Falha ao salvar no banco de dados.');
+    } finally {
+      setIsSaving(false);
     }
-    e.currentTarget.reset();
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Deseja excluir este tema?')) return;
+    try {
+      await api.deleteTheme(id);
+      setThemes(themes.filter(t => t.id !== id));
+    } catch (error) {
+      console.error('Erro ao excluir tema:', error);
+      alert('Erro ao excluir do banco de dados.');
+    }
   };
 
   return (
@@ -57,8 +80,10 @@ export function ThemesPage() {
             <div className="pt-4 flex gap-4">
               <button 
                 type="submit"
-                className="flex-1 bg-forest-900 text-parchment-200 py-3 font-bold uppercase tracking-wider text-sm hover:bg-forest-700 transition-all active:scale-95"
+                disabled={isSaving}
+                className="flex-1 bg-forest-900 text-parchment-200 py-3 font-bold uppercase tracking-wider text-sm hover:bg-forest-700 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
               >
+                {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
                 {isEditing ? 'Salvar' : 'Adicionar'}
               </button>
               {isEditing && (
@@ -76,31 +101,38 @@ export function ThemesPage() {
 
         {/* List Column - Grid style for themes */}
         <div className="lg:col-span-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {themes.map(theme => (
-              <div 
-                key={theme.id} 
-                className="group relative bg-parchment-100 border border-forest-900/10 p-5 flex items-center justify-between hover:border-forest-900 transition-all duration-300"
-              >
-                <span className="font-serif text-lg text-forest-900">{theme.name}</span>
-                
-                <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button 
-                    onClick={() => setIsEditing(theme)}
-                    className="p-2 text-forest-500 hover:text-amber-600 transition-colors"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button 
-                    onClick={() => setThemes(themes.filter(t => t.id !== theme.id))}
-                    className="p-2 text-forest-500 hover:text-red-700 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+          {isGlobalLoading ? (
+            <div className="py-24 flex flex-col items-center justify-center text-forest-900/40">
+              <Loader2 className="w-12 h-12 animate-spin mb-4" />
+              <p className="font-serif text-xl">Organizando os manuscritos...</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {themes.map(theme => (
+                <div 
+                  key={theme.id} 
+                  className="group relative bg-parchment-100 border border-forest-900/10 p-5 flex items-center justify-between hover:border-forest-900 transition-all duration-300"
+                >
+                  <span className="font-serif text-lg text-forest-900">{theme.name}</span>
+                  
+                  <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={() => setIsEditing(theme)}
+                      className="p-2 text-forest-500 hover:text-amber-600 transition-colors"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(theme.id)}
+                      className="p-2 text-forest-500 hover:text-red-700 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
           {themes.length === 0 && (
             <div className="py-24 border border-dashed border-forest-900/20 flex flex-col items-center justify-center text-forest-900/40">
               <BookOpen className="w-16 h-16 mb-4 stroke-1" />

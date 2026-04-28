@@ -1,25 +1,49 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../context/AppContext';
-import { Users, Plus, Trash2, Edit2, User } from 'lucide-react';
+import { Users, Plus, Trash2, Edit2, User, Loader2 } from 'lucide-react';
 import { Member } from '../types';
+import { api } from '../lib/api';
 
 export function MembersPage() {
-  const { members, setMembers } = useAppStore();
+  const { members, setMembers, isLoading: isGlobalLoading } = useAppStore();
   const [isEditing, setIsEditing] = useState<Member | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsSaving(true);
     const formData = new FormData(e.currentTarget);
     const name = formData.get('name') as string;
     const role = formData.get('role') as string;
 
-    if (isEditing) {
-      setMembers(members.map(m => m.id === isEditing.id ? { ...m, name, role } : m));
-      setIsEditing(null);
-    } else {
-      setMembers([...members, { id: crypto.randomUUID(), name, role }]);
+    try {
+      if (isEditing) {
+        const updated = await api.updateMember(isEditing.id, { name, role });
+        setMembers(members.map(m => m.id === isEditing.id ? updated : m));
+        setIsEditing(null);
+      } else {
+        const nouveau = await api.addMember({ name, role });
+        setMembers([...members, nouveau]);
+      }
+      (e.target as HTMLFormElement).reset();
+    } catch (error) {
+      console.error('Erro ao salvar membro:', error);
+      alert('Falha ao salvar no banco de dados. Verifique sua conexão.');
+    } finally {
+      setIsSaving(false);
     }
-    e.currentTarget.reset();
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Deseja realmente excluir este integrante?')) return;
+    
+    try {
+      await api.deleteMember(id);
+      setMembers(members.filter(m => m.id !== id));
+    } catch (error) {
+      console.error('Erro ao excluir membro:', error);
+      alert('Erro ao excluir do banco de dados.');
+    }
   };
 
   return (
@@ -78,8 +102,10 @@ export function MembersPage() {
             <div className="pt-4 flex gap-4">
               <button 
                 type="submit"
-                className="flex-1 bg-amber-500 text-forest-900 py-3 font-bold uppercase tracking-wider text-sm hover:bg-amber-400 transition-all active:scale-95"
+                disabled={isSaving}
+                className="flex-1 bg-amber-500 text-forest-900 py-3 font-bold uppercase tracking-wider text-sm hover:bg-amber-400 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
               >
+                {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
                 {isEditing ? 'Salvar' : 'Adicionar'}
               </button>
               {isEditing && (
@@ -97,7 +123,12 @@ export function MembersPage() {
 
         {/* List Column - Minimalist overlapping layout */}
         <div className="lg:col-span-8 space-y-4">
-          {members.length === 0 ? (
+          {isGlobalLoading ? (
+             <div className="py-24 flex flex-col items-center justify-center text-forest-900/40">
+                <Loader2 className="w-12 h-12 animate-spin mb-4" />
+                <p className="font-serif text-xl">Sincronizando com o céu...</p>
+             </div>
+          ) : members.length === 0 ? (
             <div className="py-24 border border-dashed border-forest-900/20 flex flex-col items-center justify-center text-forest-900/40">
               <User className="w-16 h-16 mb-4 stroke-1" />
               <p className="font-serif text-xl">O santuário está vazio.</p>
@@ -129,7 +160,7 @@ export function MembersPage() {
                     <Edit2 className="w-4 h-4" />
                   </button>
                   <button 
-                    onClick={() => setMembers(members.filter(m => m.id !== member.id))}
+                    onClick={() => handleDelete(member.id)}
                     className="p-3 text-forest-500 hover:text-red-700 hover:bg-red-50 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />

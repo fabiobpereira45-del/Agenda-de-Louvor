@@ -1,26 +1,49 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../context/AppContext';
-import { Music, Plus, Trash2, Edit2 } from 'lucide-react';
+import { Music, Plus, Trash2, Edit2, Loader2 } from 'lucide-react';
 import { Song } from '../types';
+import { api } from '../lib/api';
 
 export function SongsPage() {
-  const { masterSongs, setMasterSongs, themes } = useAppStore();
+  const { masterSongs, setMasterSongs, themes, isLoading: isGlobalLoading } = useAppStore();
   const [isEditing, setIsEditing] = useState<Song | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsSaving(true);
     const formData = new FormData(e.currentTarget);
     const title = formData.get('title') as string;
     const artist = formData.get('artist') as string;
     const themeId = formData.get('themeId') as string;
 
-    if (isEditing) {
-      setMasterSongs(masterSongs.map(s => s.id === isEditing.id ? { ...s, title, artist, themeId } : s));
-      setIsEditing(null);
-    } else {
-      setMasterSongs([...masterSongs, { id: crypto.randomUUID(), title, artist, themeId }]);
+    try {
+      if (isEditing) {
+        const updated = await api.updateSong(isEditing.id, { title, artist, themeId });
+        setMasterSongs(masterSongs.map(s => s.id === isEditing.id ? updated : s));
+        setIsEditing(null);
+      } else {
+        const nouveau = await api.addSong({ title, artist, themeId });
+        setMasterSongs([...masterSongs, nouveau]);
+      }
+      (e.target as HTMLFormElement).reset();
+    } catch (error) {
+      console.error('Erro ao salvar música:', error);
+      alert('Falha ao salvar no banco de dados.');
+    } finally {
+      setIsSaving(false);
     }
-    e.currentTarget.reset();
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Excluir esta canção do repertório?')) return;
+    try {
+      await api.deleteSong(id);
+      setMasterSongs(masterSongs.filter(s => s.id !== id));
+    } catch (error) {
+      console.error('Erro ao excluir música:', error);
+      alert('Erro ao excluir do banco de dados.');
+    }
   };
 
   return (
@@ -83,8 +106,10 @@ export function SongsPage() {
             <div className="pt-4 flex gap-4">
               <button 
                 type="submit"
-                className="flex-1 bg-forest-900 text-parchment-200 py-3 font-bold uppercase tracking-wider text-sm hover:bg-forest-700 transition-all active:scale-95"
+                disabled={isSaving}
+                className="flex-1 bg-forest-900 text-parchment-200 py-3 font-bold uppercase tracking-wider text-sm hover:bg-forest-700 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
               >
+                {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
                 {isEditing ? 'Salvar' : 'Adicionar'}
               </button>
               {isEditing && (
@@ -102,7 +127,12 @@ export function SongsPage() {
 
         {/* List Column */}
         <div className="lg:col-span-8 space-y-3">
-          {masterSongs.length === 0 ? (
+          {isGlobalLoading ? (
+            <div className="py-24 flex flex-col items-center justify-center text-forest-900/40">
+              <Loader2 className="w-12 h-12 animate-spin mb-4" />
+              <p className="font-serif text-xl">Sintonizando as vozes...</p>
+            </div>
+          ) : masterSongs.length === 0 ? (
              <div className="py-24 border border-dashed border-forest-900/20 flex flex-col items-center justify-center text-forest-900/40">
               <Music className="w-16 h-16 mb-4 stroke-1" />
               <p className="font-serif text-xl">Repertório vazio.</p>
@@ -128,7 +158,7 @@ export function SongsPage() {
                     <Edit2 className="w-4 h-4" />
                   </button>
                   <button 
-                    onClick={() => setMasterSongs(masterSongs.filter(s => s.id !== song.id))}
+                    onClick={() => handleDelete(song.id)}
                     className="p-3 text-forest-500 hover:text-red-700 hover:bg-red-50 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
