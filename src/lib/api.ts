@@ -48,22 +48,23 @@ export const api = {
   async getSongs() {
     const { data, error } = await supabase.from('songs').select('*').order('title');
     if (error) throw error;
-    // Map theme_id to themeId to match frontend interface
     return data.map(song => ({
       id: song.id,
       title: song.title,
       artist: song.artist,
-      themeId: song.theme_id
+      themeId: song.theme_id,
+      youtubeUrl: song.youtube_url || undefined
     })) as Song[];
   },
   async addSong(song: Omit<Song, 'id'>) {
     const { data, error } = await supabase.from('songs').insert({
       title: song.title,
       artist: song.artist,
-      theme_id: song.themeId
+      theme_id: song.themeId,
+      youtube_url: song.youtubeUrl || null
     }).select().single();
     if (error) throw error;
-    return { ...data, themeId: data.theme_id } as Song;
+    return { ...data, themeId: data.theme_id, youtubeUrl: data.youtube_url } as Song;
   },
   async updateSong(id: string, updates: Partial<Song>) {
     const payload: any = { ...updates };
@@ -71,9 +72,13 @@ export const api = {
       payload.theme_id = updates.themeId;
       delete payload.themeId;
     }
+    if ('youtubeUrl' in updates) {
+      payload.youtube_url = updates.youtubeUrl || null;
+      delete payload.youtubeUrl;
+    }
     const { data, error } = await supabase.from('songs').update(payload).eq('id', id).select().single();
     if (error) throw error;
-    return { ...data, themeId: data.theme_id } as Song;
+    return { ...data, themeId: data.theme_id, youtubeUrl: data.youtube_url } as Song;
   },
   async deleteSong(id: string) {
     const { error } = await supabase.from('songs').delete().eq('id', id);
@@ -98,7 +103,8 @@ export const api = {
       notes: s.notes,
       songs: (s.scale_songs || []).map((ss: any) => ({
         ...ss.songs,
-        themeId: ss.songs?.theme_id
+        themeId: ss.songs?.theme_id,
+        youtubeUrl: ss.songs?.youtube_url || undefined
       })).filter((s: any) => s.id),
       memberIds: (s.scale_members || []).map((sm: any) => sm.member_id)
     })) as Scale[];

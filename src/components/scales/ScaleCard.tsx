@@ -7,12 +7,13 @@ import { ptBR } from 'date-fns/locale';
 interface ScaleCardProps {
   scale: Scale;
   members: Member[];
+  onView: () => void;
   onEdit: () => void;
   onDelete: (id: string) => void;
   onDownload: () => void;
 }
 
-export const ScaleCard: React.FC<ScaleCardProps> = ({ scale, members, onEdit, onDelete, onDownload }) => {
+export const ScaleCard: React.FC<ScaleCardProps> = ({ scale, members, onView, onEdit, onDelete, onDownload }) => {
   const dateObj = React.useMemo(() => {
     try {
       return scale.date ? parseISO(scale.date) : new Date();
@@ -86,7 +87,10 @@ export const ScaleCard: React.FC<ScaleCardProps> = ({ scale, members, onEdit, on
             <h3 className="text-2xl font-serif text-forest-900">{scale.theme}</h3>
           </div>
           
-          <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex gap-2">
+            <button onClick={onView} className="px-3 py-1 bg-amber-500/10 text-amber-700 text-[10px] font-bold uppercase tracking-wider hover:bg-amber-500 hover:text-forest-900 transition-colors" title="Ver detalhes">
+              Ver
+            </button>
             <button onClick={onDownload} className="p-2 text-forest-500 hover:text-forest-900 transition-colors" title="Baixar PDF">
               <Download className="w-4 h-4" />
             </button>

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useAppStore } from '../context/AppContext';
 import { ScaleCard } from '../components/scales/ScaleCard';
 import { ScaleWizard } from '../components/scales/ScaleWizard';
+import { ScaleDetailModal } from '../components/scales/ScaleDetailModal';
 import { Plus, Search, Calendar as CalendarIcon, Download, Loader2 } from 'lucide-react';
 import { Scale } from '../types';
 import jsPDF from 'jspdf';
@@ -9,12 +10,14 @@ import html2canvas from 'html2canvas';
 import { parseISO, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { api } from '../lib/api';
+import { AnimatePresence } from 'motion/react';
 
 export function ScalesPage() {
   const { scales, setScales, members, isLoading } = useAppStore();
   
   const [isCreating, setIsCreating] = useState(false);
   const [editingScale, setEditingScale] = useState<Scale | null>(null);
+  const [viewingScale, setViewingScale] = useState<Scale | null>(null);
   
   const [filterQuery, setFilterQuery] = useState('');
   const [filterMonth, setFilterMonth] = useState('');
@@ -162,6 +165,7 @@ export function ScalesPage() {
             key={scale.id} 
             scale={scale} 
             members={members}
+            onView={() => setViewingScale(scale)}
             onEdit={() => setEditingScale(scale)}
             onDelete={async (id) => {
               if (!confirm('Deseja excluir esta escala?')) return;
@@ -186,25 +190,39 @@ export function ScalesPage() {
       </div>
 
       {/* Modals */}
-      {isCreating && (
-        <ScaleWizard 
-          onClose={() => setIsCreating(false)} 
-          onSave={(newScale) => {
-            setScales([...scales, { ...newScale, id: crypto.randomUUID() }]);
-            setIsCreating(false);
-          }}
-        />
-      )}
-      {editingScale && (
-        <ScaleWizard 
-          initialData={editingScale}
-          onClose={() => setEditingScale(null)} 
-          onSave={(updatedScale) => {
-            setScales(scales.map(s => s.id === updatedScale.id ? updatedScale : s));
-            setEditingScale(null);
-          }}
-        />
-      )}
+      <AnimatePresence>
+        {isCreating && (
+          <ScaleWizard 
+            onClose={() => setIsCreating(false)} 
+            onSave={(newScale) => {
+              setScales([...scales, { ...newScale, id: crypto.randomUUID() }]);
+              setIsCreating(false);
+            }}
+          />
+        )}
+        {editingScale && (
+          <ScaleWizard 
+            initialData={editingScale}
+            onClose={() => setEditingScale(null)} 
+            onSave={(updatedScale) => {
+              setScales(scales.map(s => s.id === updatedScale.id ? updatedScale : s));
+              setEditingScale(null);
+            }}
+          />
+        )}
+        {viewingScale && (
+          <ScaleDetailModal
+            scale={viewingScale}
+            members={members}
+            onClose={() => setViewingScale(null)}
+            onEdit={() => { setEditingScale(viewingScale); setViewingScale(null); }}
+            onSongsImported={(updated) => {
+              setScales(scales.map(s => s.id === updated.id ? updated : s));
+              setViewingScale(updated);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

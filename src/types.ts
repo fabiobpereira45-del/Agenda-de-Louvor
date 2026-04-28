@@ -18,7 +18,8 @@ export interface Song {
   id: string;
   title: string;
   artist: string;
-  themeId?: string; // Optional link to a specific theme
+  themeId?: string;
+  youtubeUrl?: string; // Link do YouTube opcional
 }
 
 export interface Scale {
